@@ -1,0 +1,58 @@
+name: Build plugin
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Package Blender extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build installable zip
+        id: build
+        run: |
+          python scripts/package.py
+          ARTIFACT="$(python scripts/package.py --name-only)"
+          echo "artifact=${ARTIFACT}" >> "$GITHUB_OUTPUT"
+          echo "artifact_path=dist/${ARTIFACT}" >> "$GITHUB_OUTPUT"
+          # Also emit a stable name for "latest" style downloads on main
+          cp "dist/${ARTIFACT}" dist/chrome_ref_drop-latest.zip
+          ls -la dist/
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-ref-drop-plugin
+          path: |
+            dist/chrome_ref_drop-*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/${{ steps.build.outputs.artifact }}
+            dist/chrome_ref_drop-latest.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

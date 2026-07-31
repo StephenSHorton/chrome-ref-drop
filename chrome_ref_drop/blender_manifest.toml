@@ -1,0 +1,20 @@
+schema_version = "1.0.0"
+
+id = "chrome_ref_drop"
+version = "0.1.0"
+name = "Chrome Reference Drop"
+tagline = "Drop or paste browser images into the 3D View as reference empties"
+maintainer = "4step"
+type = "add-on"
+website = "https://github.com/StephenSHorton/chrome-ref-drop"
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+tags = ["Import-Export", "3D View"]
+
+[permissions]
+network = "Download images from http(s) URLs dragged or pasted from a browser"
+files = "Read dropped image files and cache downloaded browser images"
