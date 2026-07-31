@@ -10,11 +10,20 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-and-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   package:
     name: Package Blender extension
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      artifact: ${{ steps.build.outputs.artifact }}
 
     steps:
       - name: Checkout
@@ -25,16 +34,32 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build installable zip
+      - name: Build installable zip + install URLs
         id: build
         run: |
           python scripts/package.py
           ARTIFACT="$(python scripts/package.py --name-only)"
+          VERSION="${ARTIFACT#chrome_ref_drop-}"
+          VERSION="${VERSION%.zip}"
           echo "artifact=${ARTIFACT}" >> "$GITHUB_OUTPUT"
-          echo "artifact_path=dist/${ARTIFACT}" >> "$GITHUB_OUTPUT"
-          # Also emit a stable name for "latest" style downloads on main
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           cp "dist/${ARTIFACT}" dist/chrome_ref_drop-latest.zip
-          ls -la dist/
+          # Static repo index pointing at the GitHub Release asset
+          python scripts/package.py \
+            --repo-index dist/index.json \
+            --archive-url "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${ARTIFACT}"
+          # Staging tree for GitHub Pages
+          mkdir -p _site
+          cp docs/index.html _site/index.html
+          cp dist/index.json _site/index.json
+          cp dist/install-urls.json _site/install-urls.json
+          ls -la dist/ _site/
+          echo "Drag URL:"
+          python scripts/package.py --drag-url-only
+
+      - name: Expose version
+        id: meta
+        run: echo "version=${{ steps.build.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
@@ -42,8 +67,16 @@ jobs:
           name: chrome-ref-drop-plugin
           path: |
             dist/chrome_ref_drop-*.zip
+            dist/index.json
+            dist/install-urls.json
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -54,5 +87,30 @@ jobs:
             dist/chrome_ref_drop-latest.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
+          body: |
+            ## Install
+
+            **Drag and drop into Blender** (same pattern as [Blender MCP](https://www.blender.org/lab/mcp-server/)):
+
+            👉 Landing page: https://stephenshorton.github.io/chrome-ref-drop/
+
+            Or drag this URL onto Blender:
+
+            `https://github.com/${{ github.repository }}/releases/latest/download/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0`
+
+            …or download the zip and **Install from Disk**.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-pages:
+    name: Deploy GitHub Pages
+    needs: package
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

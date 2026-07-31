@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chrome Reference Drop — Blender add-on</title>
+  <meta
+    name="description"
+    content="Paste or drop browser images into Blender as reference empties. Drag this page’s install link straight into Blender."
+  />
+  <meta property="og:title" content="Chrome Reference Drop" />
+  <meta
+    property="og:description"
+    content="Browser image → Blender reference empty. Drag-and-drop install."
+  />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111827'/%3E%3Cpath d='M14 40 L32 14 L50 40 Z' fill='none' stroke='%23ea7600' stroke-width='4'/%3E%3Ccircle cx='40' cy='42' r='10' fill='none' stroke='%2360a5fa' stroke-width='3'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --bg-elev: #12151d;
+      --bg-card: #171b25;
+      --border: #2a3142;
+      --text: #e8ecf4;
+      --muted: #9aa3b5;
+      --orange: #ea7600;
+      --orange-dim: #c46200;
+      --blue: #5b9fd4;
+      --green: #3dd68c;
+      --danger: #ff6b6b;
+      --radius: 14px;
+      --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1a2438 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #2a1a0a 0%, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: #8ec5ef; }
+
+    .wrap {
+      width: min(980px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2.5rem 0 4rem;
+    }
+
+    header.hero {
+      display: grid;
+      gap: 1.75rem;
+      padding: 1rem 0 2rem;
+    }
+
+    @media (min-width: 820px) {
+      header.hero {
+        grid-template-columns: 1.2fr 0.9fr;
+        align-items: center;
+      }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--orange);
+      background: color-mix(in srgb, var(--orange) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+      border-radius: 999px;
+      padding: 0.28rem 0.7rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 2.85rem);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      margin: 0.7rem 0 0.8rem;
+    }
+
+    .lede {
+      font-size: 1.12rem;
+      color: var(--muted);
+      margin: 0 0 1.25rem;
+      max-width: 36rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      border-radius: 999px;
+      padding: 0.85rem 1.25rem;
+      font-weight: 650;
+      font-size: 0.98rem;
+      border: 1px solid transparent;
+      text-decoration: none;
+      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+      user-select: none;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn-install-drag {
+      background: linear-gradient(180deg, #ff8a1a 0%, var(--orange) 55%, var(--orange-dim) 100%);
+      color: #1a0f00 !important;
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--orange) 50%, #000),
+        0 10px 30px color-mix(in srgb, var(--orange) 28%, transparent);
+      cursor: grab;
+    }
+
+    .btn-install-drag:hover {
+      filter: brightness(1.05);
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--orange) 70%, #000),
+        0 14px 36px color-mix(in srgb, var(--orange) 38%, transparent);
+    }
+
+    .btn-install-drag:active { cursor: grabbing; }
+
+    .btn-ghost {
+      background: var(--bg-elev);
+      color: var(--text) !important;
+      border-color: var(--border);
+    }
+
+    .btn-ghost:hover { border-color: #3d4760; background: #1a2030; }
+
+    .hint {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0.85rem 0 0;
+    }
+
+    .hint strong { color: var(--text); font-weight: 600; }
+
+    .visual {
+      background: linear-gradient(160deg, #1a2030, #12151d 60%);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 4px);
+      padding: 1.25rem;
+      box-shadow: 0 20px 50px #00000055;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .visual::before {
+      content: "";
+      position: absolute;
+      inset: -40% -20% auto auto;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, color-mix(in srgb, var(--orange) 30%, transparent), transparent 70%);
+      pointer-events: none;
+    }
+
+    .flow {
+      display: grid;
+      gap: 0.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.75rem;
+      align-items: start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 0.95rem;
+    }
+
+    .flow-num {
+      width: 1.7rem;
+      height: 1.7rem;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: color-mix(in srgb, var(--orange) 18%, transparent);
+      color: var(--orange);
+      border: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+    }
+
+    .flow-step h3 {
+      margin: 0 0 0.15rem;
+      font-size: 0.95rem;
+    }
+
+    .flow-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .arrow {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1;
+      opacity: 0.7;
+    }
+
+    section {
+      margin-top: 2.75rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 1rem;
+    }
+
+    @media (min-width: 720px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.15rem;
+    }
+
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+    }
+
+    .card p, .card li {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .card p { margin: 0; }
+
+    table.cmp {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .cmp th, .cmp td {
+      padding: 0.75rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .cmp th {
+      background: #1a2030;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .cmp tr:last-child td { border-bottom: none; }
+    .cmp td:last-child { color: var(--green); font-weight: 600; }
+    .cmp td.bad { color: var(--danger); font-weight: 600; }
+
+    kbd {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      background: #0f131c;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 0.12rem 0.4rem;
+      color: var(--text);
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .steps li {
+      counter-increment: step;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1rem 0.9rem 3rem;
+      position: relative;
+      color: var(--muted);
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0.85rem;
+      top: 0.9rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--orange);
+      background: color-mix(in srgb, var(--orange) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
+    }
+
+    .steps li strong { color: var(--text); }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.88rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      justify-content: space-between;
+    }
+
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+    }
+
+    .note {
+      margin-top: 0.85rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: #121826;
+      border-left: 3px solid var(--orange);
+      padding: 0.65rem 0.85rem;
+      border-radius: 0 8px 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div>
+        <span class="badge">Blender 4.2+ · 5.x</span>
+        <h1>Browser image → Blender reference. In one paste.</h1>
+        <p class="lede">
+          <strong style="color:var(--text)">Chrome Reference Drop</strong> turns images from Chrome
+          (or any browser) into real <em>reference image empties</em> in your scene —
+          no save-to-desktop detour.
+        </p>
+
+        <div class="hero-actions">
+          <!--
+            Same pattern as blender.org/lab/mcp-server/:
+            drag an <a href="….zip?repository=…&blender_version_min=…"> into Blender.
+          -->
+          <a
+            id="drag-install"
+            class="btn btn-install-drag"
+            draggable="true"
+            href="https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0"
+          >
+            <span aria-hidden="true">⧉</span>
+            <span>Drag and Drop into Blender</span>
+          </a>
+          <a
+            id="download-link"
+            class="btn btn-ghost"
+            href="https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip"
+          >
+            Download zip
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/StephenSHorton/chrome-ref-drop">
+            GitHub
+          </a>
+        </div>
+
+        <p class="hint">
+          Grab the orange button and drop it on a running Blender window
+          (or onto the Preferences → Get Extensions area).
+          <strong>First drop may add the update repository; drop a second time to install</strong>
+          — same flow as Blender Lab’s MCP add-on.
+        </p>
+        <p class="note">
+          Prefer menus? Download the zip → Blender →
+          <strong>Edit → Preferences → Extensions → Install from Disk</strong>.
+          Enable <strong>Allow Online Access</strong> if you want URL downloads.
+        </p>
+      </div>
+
+      <aside class="visual" aria-label="How it works">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div>
+              <h3>Chrome</h3>
+              <p>Right-click any image → <strong style="color:var(--text)">Copy image</strong></p>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div>
+              <h3>Blender 3D View</h3>
+              <p>Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd></p>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div>
+              <h3>Reference empty</h3>
+              <p>Aligned to view, ready to model against</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </header>
+
+    <section>
+      <h2>Why this exists</h2>
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th>What you try</th>
+            <th>Stock Blender</th>
+            <th>With this add-on</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Drop a file from Explorer</td>
+            <td style="color:var(--green);font-weight:600">Reference empty ✓</td>
+            <td>Also works</td>
+          </tr>
+          <tr>
+            <td>Chrome “Copy image”</td>
+            <td class="bad">Nothing</td>
+            <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> → reference</td>
+          </tr>
+          <tr>
+            <td>Paste image URL</td>
+            <td class="bad">Nothing</td>
+            <td>Downloads → reference</td>
+          </tr>
+          <tr>
+            <td>URL-only browser drag</td>
+            <td class="bad">No Python hook</td>
+            <td>Use paste / From URL (honest limit)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>After install</h2>
+      <ol class="steps">
+        <li><strong>Enable</strong> “Chrome Reference Drop” under Preferences → Extensions / Add-ons.</li>
+        <li>Optional: turn on <strong>Allow Online Access</strong> for http(s) image downloads.</li>
+        <li>In the 3D View use <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>, or
+          <strong>Object → Reference Images</strong>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Also included</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>From URL…</h3>
+          <p>Paste an image address. Data-URLs and normal https images are cached locally then loaded as empties.</p>
+        </div>
+        <div class="card">
+          <h3>Import files</h3>
+          <p>Classic file browser for PNG/JPG/WebP/… if you already saved them to disk.</p>
+        </div>
+        <div class="card">
+          <h3>View-aligned placement</h3>
+          <p>New refs face the active viewport and land near the 3D cursor / view focus.</p>
+        </div>
+        <div class="card">
+          <h3>Open source</h3>
+          <p>GPL-3.0-or-later. Issues &amp; PRs welcome on GitHub. CI builds the install zip on every release tag.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Chrome Reference Drop · GPL-3.0-or-later</span>
+      <span>
+        <a href="https://github.com/StephenSHorton/chrome-ref-drop">Source</a>
+        ·
+        <a href="https://github.com/StephenSHorton/chrome-ref-drop/releases">Releases</a>
+        ·
+        <a href="./index.json">Extension index.json</a>
+      </span>
+    </footer>
+  </div>
+
+  <script>
+    // Keep drag payload as the install URL (some browsers drag the visible text otherwise).
+    (function () {
+      const link = document.getElementById("drag-install");
+      if (!link) return;
+      link.addEventListener("dragstart", (e) => {
+        const url = link.href;
+        e.dataTransfer.setData("text/uri-list", url);
+        e.dataTransfer.setData("text/plain", url);
+        e.dataTransfer.setData("DownloadURL", "application/zip:chrome_ref_drop.zip:" + url.split("?")[0]);
+        e.dataTransfer.effectAllowed = "copyLink";
+      });
+    })();
+  </script>
+</body>
+</html>
