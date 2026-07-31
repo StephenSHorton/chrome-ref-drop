@@ -14,46 +14,158 @@
     content="Browser image → Blender reference empty. Drag-and-drop install."
   />
   <meta property="og:type" content="website" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111827'/%3E%3Cpath d='M14 40 L32 14 L50 40 Z' fill='none' stroke='%23ea7600' stroke-width='4'/%3E%3Ccircle cx='40' cy='42' r='10' fill='none' stroke='%2360a5fa' stroke-width='3'/%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="./blender-logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0b0d12;
-      --bg-elev: #12151d;
-      --bg-card: #171b25;
-      --border: #2a3142;
-      --text: #e8ecf4;
-      --muted: #9aa3b5;
+      --bg: oklch(0.11 0.015 255);
+      --fg: oklch(0.97 0.01 250);
+      --muted: oklch(0.72 0.025 250);
       --orange: #ea7600;
+      --orange-bright: #ff8f1f;
       --orange-dim: #c46200;
-      --blue: #5b9fd4;
+      --blender-blue: #265787;
+      --neon-blue: oklch(0.72 0.2 255);
+      --neon-red: oklch(0.68 0.26 25);
+      --neon-green: oklch(0.84 0.24 145);
       --green: #3dd68c;
       --danger: #ff6b6b;
       --radius: 14px;
-      --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font: "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
       --mono: "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+      --animate-smoke-drift: smoke-drift 18s ease-in-out infinite alternate;
+      --animate-smoke-drift-slow: smoke-drift 28s ease-in-out infinite alternate-reverse;
+      --animate-lightbar: lightbar-shimmer 3.5s linear infinite;
+      --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes smoke-drift {
+      0% { transform: translate3d(-4%, -2%, 0) scale(1); }
+      100% { transform: translate3d(5%, 3%, 0) scale(1.08); }
+    }
+    @keyframes lightbar-shimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 0.95; transform: scale(1.06); }
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; color-scheme: dark; }
     body {
       margin: 0;
       font-family: var(--font);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, #1a2438 0%, transparent 55%),
-        radial-gradient(900px 500px at 100% 0%, #2a1a0a 0%, transparent 50%),
-        var(--bg);
-      color: var(--text);
+      background: var(--bg);
+      color: var(--fg);
       line-height: 1.55;
       min-height: 100vh;
+      antialiased: true;
+      -webkit-font-smoothing: antialiased;
     }
 
-    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-    a:hover { color: #8ec5ef; }
+    ::selection {
+      background: color-mix(in srgb, var(--orange) 40%, transparent);
+      color: white;
+    }
 
+    a { color: #7eb6e8; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: #a8d4f5; }
+
+    /* ── Ambient stage (rgbeast-style) ── */
+    .fx {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .fx-base { position: absolute; inset: 0; background: var(--bg); }
+    .fx-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, oklch(0.85 0.06 70 / 8%) 1px, transparent 1px),
+        linear-gradient(to bottom, oklch(0.85 0.06 70 / 8%) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 18%, black 8%, transparent 78%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 18%, black 8%, transparent 78%);
+    }
+    .fx-noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.35;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    .fx-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(64px);
+      opacity: 0.72;
+    }
+    .fx-orb-a {
+      top: -6rem; left: 18%;
+      width: 42rem; height: 42rem;
+      animation: var(--animate-smoke-drift);
+      background: radial-gradient(circle, color-mix(in srgb, var(--orange) 36%, transparent), transparent 68%);
+    }
+    .fx-orb-b {
+      top: 28%; right: -8%;
+      width: 34rem; height: 34rem;
+      animation: var(--animate-smoke-drift-slow);
+      background: radial-gradient(circle, color-mix(in srgb, var(--blender-blue) 42%, transparent), transparent 70%);
+    }
+    .fx-orb-c {
+      bottom: -4%; left: -8%;
+      width: 30rem; height: 30rem;
+      animation: var(--animate-smoke-drift);
+      background: radial-gradient(circle, color-mix(in srgb, #3d7ab5 32%, transparent), transparent 72%);
+    }
+    .fx-orb-d {
+      top: 55%; left: 42%;
+      width: 22rem; height: 22rem;
+      animation: var(--animate-smoke-drift-slow);
+      opacity: 0.45;
+      background: radial-gradient(circle, color-mix(in srgb, var(--orange-bright) 22%, transparent), transparent 70%);
+    }
+    .fx-vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, transparent 30%, oklch(0.08 0.02 255 / 55%) 100%),
+        linear-gradient(to top, var(--bg), transparent 12rem);
+    }
+
+    .lightbar {
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--orange-dim) 12%,
+        var(--orange) 40%,
+        #3d8fd4 72%,
+        var(--blender-blue) 88%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      animation: var(--animate-lightbar);
+      box-shadow:
+        0 0 10px color-mix(in srgb, var(--orange) 45%, transparent),
+        0 0 22px color-mix(in srgb, var(--blender-blue) 30%, transparent);
+    }
+
+    /* ── Layout ── */
     .wrap {
       width: min(980px, calc(100% - 2rem));
       margin: 0 auto;
       padding: 2.5rem 0 4rem;
+      position: relative;
+      z-index: 1;
     }
 
     header.hero {
@@ -61,7 +173,6 @@
       gap: 1.75rem;
       padding: 1rem 0 2rem;
     }
-
     @media (min-width: 820px) {
       header.hero {
         grid-template-columns: 1.2fr 0.9fr;
@@ -69,34 +180,79 @@
       }
     }
 
+    /* ── Glass surfaces ── */
+    .glass {
+      background: linear-gradient(
+        155deg,
+        color-mix(in srgb, var(--orange) 10%, oklch(0.2 0.04 255 / 50%)),
+        oklch(0.14 0.03 255 / 40%) 55%,
+        oklch(0.12 0.025 255 / 36%)
+      );
+      border: 1px solid color-mix(in srgb, var(--orange) 22%, transparent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+        0 0 0 1px oklch(0.2 0.04 255 / 28%);
+      backdrop-filter: blur(18px) saturate(150%);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+    }
+    .glass-strong {
+      background: linear-gradient(
+        165deg,
+        color-mix(in srgb, var(--orange) 14%, oklch(0.22 0.05 255 / 58%)),
+        oklch(0.13 0.03 255 / 50%) 60%,
+        oklch(0.11 0.025 255 / 46%)
+      );
+      border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+        0 0 36px color-mix(in srgb, var(--orange) 10%, transparent);
+      backdrop-filter: blur(24px) saturate(165%);
+      -webkit-backdrop-filter: blur(24px) saturate(165%);
+    }
+
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.78rem;
+      gap: 0.45rem;
+      font-size: 0.72rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--orange);
-      background: color-mix(in srgb, var(--orange) 12%, transparent);
-      border: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+      color: var(--muted);
       border-radius: 999px;
-      padding: 0.28rem 0.7rem;
+      padding: 0.35rem 0.8rem;
+    }
+    .badge-dot {
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 10px var(--orange);
+      animation: var(--animate-pulse-glow);
     }
 
     h1 {
-      font-size: clamp(2rem, 4vw, 2.85rem);
-      line-height: 1.12;
+      font-size: clamp(2rem, 4.2vw, 2.9rem);
+      line-height: 1.1;
       letter-spacing: -0.03em;
-      margin: 0.7rem 0 0.8rem;
+      font-weight: 600;
+      margin: 0.85rem 0 0.9rem;
+    }
+    .accent {
+      background: linear-gradient(115deg, var(--orange-bright) 0%, var(--orange) 45%, #5b9fd4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 18px color-mix(in srgb, var(--orange) 35%, transparent));
     }
 
     .lede {
-      font-size: 1.12rem;
+      font-size: 1.08rem;
       color: var(--muted);
-      margin: 0 0 1.25rem;
+      margin: 0 0 1.35rem;
       max-width: 36rem;
     }
+    .lede strong { color: var(--fg); font-weight: 600; }
 
     .hero-actions {
       display: flex;
@@ -109,91 +265,109 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.55rem;
+      gap: 0.65rem;
       border-radius: 999px;
-      padding: 0.85rem 1.25rem;
+      padding: 0.9rem 1.3rem;
       font-weight: 650;
       font-size: 0.98rem;
       border: 1px solid transparent;
-      text-decoration: none;
-      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+      text-decoration: none !important;
+      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
       user-select: none;
+      color: inherit;
     }
-
     .btn:active { transform: translateY(1px); }
 
     .btn-install-drag {
-      background: linear-gradient(180deg, #ff8a1a 0%, var(--orange) 55%, var(--orange-dim) 100%);
-      color: #1a0f00 !important;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--orange-bright) 92%, white) 0%,
+        var(--orange) 48%,
+        var(--orange-dim) 100%
+      );
+      color: #1a0c00 !important;
+      border-color: color-mix(in srgb, var(--orange) 55%, #000);
       box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--orange) 50%, #000),
-        0 10px 30px color-mix(in srgb, var(--orange) 28%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--orange) 40%, transparent),
+        0 10px 32px color-mix(in srgb, var(--orange) 32%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 35%, transparent);
       cursor: grab;
     }
-
     .btn-install-drag:hover {
-      filter: brightness(1.05);
+      filter: brightness(1.06);
       box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--orange) 70%, #000),
-        0 14px 36px color-mix(in srgb, var(--orange) 38%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--orange) 65%, transparent),
+        0 14px 40px color-mix(in srgb, var(--orange) 42%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 40%, transparent);
     }
-
     .btn-install-drag:active { cursor: grabbing; }
 
-    .btn-ghost {
-      background: var(--bg-elev);
-      color: var(--text) !important;
-      border-color: var(--border);
+    .btn-icon {
+      width: 1.45rem;
+      height: 1.45rem;
+      flex-shrink: 0;
+      display: block;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
     }
 
-    .btn-ghost:hover { border-color: #3d4760; background: #1a2030; }
+    .btn-ghost {
+      color: var(--fg) !important;
+      border-color: color-mix(in srgb, white 12%, transparent);
+      background: oklch(0.16 0.03 255 / 45%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .btn-ghost:hover {
+      border-color: color-mix(in srgb, white 22%, transparent);
+      background: oklch(0.2 0.035 255 / 55%);
+    }
 
     .hint {
       font-size: 0.9rem;
       color: var(--muted);
-      margin: 0.85rem 0 0;
+      margin: 0.95rem 0 0;
+    }
+    .hint strong { color: var(--fg); font-weight: 600; }
+
+    .note {
+      margin-top: 0.9rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-radius: 12px;
+      padding: 0.75rem 0.95rem;
+      border-left: 3px solid var(--orange);
     }
 
-    .hint strong { color: var(--text); font-weight: 600; }
-
+    /* ── Flow card ── */
     .visual {
-      background: linear-gradient(160deg, #1a2030, #12151d 60%);
-      border: 1px solid var(--border);
       border-radius: calc(var(--radius) + 4px);
-      padding: 1.25rem;
-      box-shadow: 0 20px 50px #00000055;
+      padding: 1.15rem;
       position: relative;
       overflow: hidden;
     }
-
     .visual::before {
       content: "";
       position: absolute;
-      inset: -40% -20% auto auto;
-      width: 220px;
-      height: 220px;
-      background: radial-gradient(circle, color-mix(in srgb, var(--orange) 30%, transparent), transparent 70%);
+      inset: -30% -10% auto auto;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, color-mix(in srgb, var(--orange) 28%, transparent), transparent 70%);
       pointer-events: none;
     }
-
     .flow {
       display: grid;
-      gap: 0.75rem;
+      gap: 0.7rem;
       position: relative;
       z-index: 1;
     }
-
     .flow-step {
       display: grid;
       grid-template-columns: auto 1fr;
       gap: 0.75rem;
       align-items: start;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 0.85rem 0.95rem;
     }
-
     .flow-num {
       width: 1.7rem;
       height: 1.7rem;
@@ -202,37 +376,26 @@
       place-items: center;
       font-size: 0.85rem;
       font-weight: 700;
-      background: color-mix(in srgb, var(--orange) 18%, transparent);
       color: var(--orange);
-      border: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+      background: color-mix(in srgb, var(--orange) 16%, transparent);
+      border: 1px solid color-mix(in srgb, var(--orange) 32%, transparent);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--orange) 18%, transparent);
     }
-
-    .flow-step h3 {
-      margin: 0 0 0.15rem;
-      font-size: 0.95rem;
-    }
-
-    .flow-step p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
+    .flow-step h3 { margin: 0 0 0.15rem; font-size: 0.95rem; font-weight: 600; }
+    .flow-step p { margin: 0; color: var(--muted); font-size: 0.88rem; }
     .arrow {
       text-align: center;
-      color: var(--muted);
-      font-size: 1.1rem;
+      color: color-mix(in srgb, var(--orange) 55%, var(--muted));
+      font-size: 1rem;
       line-height: 1;
-      opacity: 0.7;
+      opacity: 0.75;
     }
 
-    section {
-      margin-top: 2.75rem;
-    }
-
+    section { margin-top: 2.75rem; }
     h2 {
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       letter-spacing: -0.02em;
+      font-weight: 600;
       margin: 0 0 1rem;
     }
 
@@ -240,56 +403,39 @@
       display: grid;
       gap: 1rem;
     }
-
     @media (min-width: 720px) {
       .grid-2 { grid-template-columns: 1fr 1fr; }
     }
 
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 1.1rem 1.15rem;
     }
-
-    .card h3 {
-      margin: 0 0 0.4rem;
-      font-size: 1rem;
-    }
-
-    .card p, .card li {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
+    .card h3 { margin: 0 0 0.4rem; font-size: 1rem; font-weight: 600; }
+    .card p, .card li { color: var(--muted); font-size: 0.92rem; }
     .card p { margin: 0; }
 
     table.cmp {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.92rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
     }
-
     .cmp th, .cmp td {
       padding: 0.75rem 0.9rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid color-mix(in srgb, white 8%, transparent);
       text-align: left;
       vertical-align: top;
     }
-
     .cmp th {
-      background: #1a2030;
       color: var(--muted);
       font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
+      background: oklch(0.14 0.03 255 / 50%);
     }
-
     .cmp tr:last-child td { border-bottom: none; }
     .cmp td:last-child { color: var(--green); font-weight: 600; }
     .cmp td.bad { color: var(--danger); font-weight: 600; }
@@ -297,12 +443,12 @@
     kbd {
       font-family: var(--mono);
       font-size: 0.82em;
-      background: #0f131c;
-      border: 1px solid var(--border);
+      background: oklch(0.12 0.02 255 / 80%);
+      border: 1px solid color-mix(in srgb, white 12%, transparent);
       border-bottom-width: 2px;
       border-radius: 6px;
       padding: 0.12rem 0.4rem;
-      color: var(--text);
+      color: var(--fg);
     }
 
     .steps {
@@ -313,17 +459,13 @@
       display: grid;
       gap: 0.75rem;
     }
-
     .steps li {
       counter-increment: step;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 0.9rem 1rem 0.9rem 3rem;
       position: relative;
       color: var(--muted);
     }
-
     .steps li::before {
       content: counter(step);
       position: absolute;
@@ -340,47 +482,51 @@
       background: color-mix(in srgb, var(--orange) 15%, transparent);
       border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
     }
-
-    .steps li strong { color: var(--text); }
+    .steps li strong { color: var(--fg); }
 
     footer {
       margin-top: 3rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid var(--border);
+      padding-top: 0;
       color: var(--muted);
       font-size: 0.88rem;
+    }
+    .footer-inner {
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem 1.25rem;
       justify-content: space-between;
-    }
-
-    .drag-ghost {
-      position: fixed;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0;
-    }
-
-    .note {
-      margin-top: 0.85rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-      background: #121826;
-      border-left: 3px solid var(--orange);
-      padding: 0.65rem 0.85rem;
-      border-radius: 0 8px 8px 0;
+      padding: 1.25rem 0 0;
     }
   </style>
 </head>
 <body>
+  <!-- Ambient stage -->
+  <div class="fx" aria-hidden="true">
+    <div class="fx-base"></div>
+    <div class="fx-grid"></div>
+    <div class="fx-noise"></div>
+    <div class="fx-orb fx-orb-a"></div>
+    <div class="fx-orb fx-orb-b"></div>
+    <div class="fx-orb fx-orb-c"></div>
+    <div class="fx-orb fx-orb-d"></div>
+    <div class="fx-vignette"></div>
+  </div>
+
   <div class="wrap">
+    <div class="lightbar" style="margin-bottom: 1.75rem; border-radius: 2px;"></div>
+
     <header class="hero">
       <div>
-        <span class="badge">Blender 4.2+ · 5.x</span>
-        <h1>Browser image → Blender reference. In one paste.</h1>
+        <span class="badge glass">
+          <span class="badge-dot" aria-hidden="true"></span>
+          Blender 4.2+ · 5.x
+        </span>
+        <h1>
+          Browser image → Blender reference.
+          <span class="accent">In one paste.</span>
+        </h1>
         <p class="lede">
-          <strong style="color:var(--text)">Chrome Reference Drop</strong> turns images from Chrome
+          <strong>Chrome Reference Drop</strong> turns images from Chrome
           (or any browser) into real <em>reference image empties</em> in your scene —
           no save-to-desktop detour.
         </p>
@@ -395,8 +541,16 @@
             class="btn btn-install-drag"
             draggable="true"
             href="https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0"
+            title="Drag this button onto a Blender window"
           >
-            <span aria-hidden="true">⧉</span>
+            <img
+              class="btn-icon"
+              src="./blender-logo.svg"
+              width="24"
+              height="20"
+              alt=""
+              draggable="false"
+            />
             <span>Drag and Drop into Blender</span>
           </a>
           <a
@@ -413,28 +567,28 @@
 
         <p class="hint">
           Grab the orange button and drop it on a running Blender window
-          (or onto the Preferences → Get Extensions area).
+          (or onto Preferences → Get Extensions).
           <strong>First drop may add the update repository; drop a second time to install</strong>
           — same flow as Blender Lab’s MCP add-on.
         </p>
-        <p class="note">
+        <p class="note glass">
           Prefer menus? Download the zip → Blender →
           <strong>Edit → Preferences → Extensions → Install from Disk</strong>.
           Enable <strong>Allow Online Access</strong> if you want URL downloads.
         </p>
       </div>
 
-      <aside class="visual" aria-label="How it works">
+      <aside class="visual glass-strong" aria-label="How it works">
         <div class="flow">
-          <div class="flow-step">
+          <div class="flow-step glass">
             <div class="flow-num">1</div>
             <div>
               <h3>Chrome</h3>
-              <p>Right-click any image → <strong style="color:var(--text)">Copy image</strong></p>
+              <p>Right-click any image → <strong style="color:var(--fg)">Copy image</strong></p>
             </div>
           </div>
           <div class="arrow">↓</div>
-          <div class="flow-step">
+          <div class="flow-step glass">
             <div class="flow-num">2</div>
             <div>
               <h3>Blender 3D View</h3>
@@ -442,7 +596,7 @@
             </div>
           </div>
           <div class="arrow">↓</div>
-          <div class="flow-step">
+          <div class="flow-step glass">
             <div class="flow-num">3</div>
             <div>
               <h3>Reference empty</h3>
@@ -455,7 +609,7 @@
 
     <section>
       <h2>Why this exists</h2>
-      <table class="cmp">
+      <table class="cmp glass">
         <thead>
           <tr>
             <th>What you try</th>
@@ -491,9 +645,9 @@
     <section>
       <h2>After install</h2>
       <ol class="steps">
-        <li><strong>Enable</strong> “Chrome Reference Drop” under Preferences → Extensions / Add-ons.</li>
-        <li>Optional: turn on <strong>Allow Online Access</strong> for http(s) image downloads.</li>
-        <li>In the 3D View use <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>, or
+        <li class="glass"><strong>Enable</strong> “Chrome Reference Drop” under Preferences → Extensions / Add-ons.</li>
+        <li class="glass">Optional: turn on <strong>Allow Online Access</strong> for http(s) image downloads.</li>
+        <li class="glass">In the 3D View use <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>, or
           <strong>Object → Reference Images</strong>.</li>
       </ol>
     </section>
@@ -501,19 +655,19 @@
     <section>
       <h2>Also included</h2>
       <div class="grid-2">
-        <div class="card">
+        <div class="card glass">
           <h3>From URL…</h3>
           <p>Paste an image address. Data-URLs and normal https images are cached locally then loaded as empties.</p>
         </div>
-        <div class="card">
+        <div class="card glass">
           <h3>Import files</h3>
           <p>Classic file browser for PNG/JPG/WebP/… if you already saved them to disk.</p>
         </div>
-        <div class="card">
+        <div class="card glass">
           <h3>View-aligned placement</h3>
           <p>New refs face the active viewport and land near the 3D cursor / view focus.</p>
         </div>
-        <div class="card">
+        <div class="card glass">
           <h3>Open source</h3>
           <p>GPL-3.0-or-later. Issues &amp; PRs welcome on GitHub. CI builds the install zip on every release tag.</p>
         </div>
@@ -521,19 +675,21 @@
     </section>
 
     <footer>
-      <span>Chrome Reference Drop · GPL-3.0-or-later</span>
-      <span>
-        <a href="https://github.com/StephenSHorton/chrome-ref-drop">Source</a>
-        ·
-        <a href="https://github.com/StephenSHorton/chrome-ref-drop/releases">Releases</a>
-        ·
-        <a href="./index.json">Extension index.json</a>
-      </span>
+      <div class="lightbar" style="opacity: 0.55; border-radius: 2px;"></div>
+      <div class="footer-inner">
+        <span>Chrome Reference Drop · GPL-3.0-or-later</span>
+        <span>
+          <a href="https://github.com/StephenSHorton/chrome-ref-drop">Source</a>
+          ·
+          <a href="https://github.com/StephenSHorton/chrome-ref-drop/releases">Releases</a>
+          ·
+          <a href="./index.json">Extension index.json</a>
+        </span>
+      </div>
     </footer>
   </div>
 
   <script>
-    // Keep drag payload as the install URL (some browsers drag the visible text otherwise).
     (function () {
       const link = document.getElementById("drag-install");
       if (!link) return;
