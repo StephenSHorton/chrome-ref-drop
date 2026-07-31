@@ -51,7 +51,9 @@ jobs:
           # Staging tree for GitHub Pages
           mkdir -p _site
           cp docs/index.html _site/index.html
+          cp docs/brand-mark.svg _site/brand-mark.svg
           cp docs/blender-logo.svg _site/blender-logo.svg
+          cp docs/chrome-logo.svg _site/chrome-logo.svg
           cp dist/index.json _site/index.json
           cp dist/install-urls.json _site/install-urls.json
           ls -la dist/ _site/

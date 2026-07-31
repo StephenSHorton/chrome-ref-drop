@@ -14,7 +14,8 @@
     content="Browser image → Blender reference empty. Drag-and-drop install."
   />
   <meta property="og:type" content="website" />
-  <link rel="icon" type="image/svg+xml" href="./blender-logo.svg" />
+  <link rel="icon" type="image/svg+xml" href="./brand-mark.svg" />
+  <link rel="apple-touch-icon" href="./brand-mark.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -278,36 +279,69 @@
     }
     .btn:active { transform: translateY(1px); }
 
+    /* Button C: Blender blue fill — orange Blender mark stays readable */
     .btn-install-drag {
-      background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--orange-bright) 92%, white) 0%,
-        var(--orange) 48%,
-        var(--orange-dim) 100%
-      );
-      color: #1a0c00 !important;
-      border-color: color-mix(in srgb, var(--orange) 55%, #000);
+      background: linear-gradient(180deg, #3d7ab0 0%, var(--blender-blue) 55%, #1a3f63 100%);
+      color: #f5f8fc !important;
+      border-color: #1a3f63;
       box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--orange) 40%, transparent),
-        0 10px 32px color-mix(in srgb, var(--orange) 32%, transparent),
-        inset 0 1px 0 color-mix(in srgb, white 35%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--blender-blue) 50%, transparent),
+        0 10px 32px color-mix(in srgb, var(--blender-blue) 40%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
       cursor: grab;
     }
     .btn-install-drag:hover {
-      filter: brightness(1.06);
+      filter: brightness(1.08);
       box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--orange) 65%, transparent),
-        0 14px 40px color-mix(in srgb, var(--orange) 42%, transparent),
-        inset 0 1px 0 color-mix(in srgb, white 40%, transparent);
+        0 0 0 1px color-mix(in srgb, #5b9fd4 55%, transparent),
+        0 14px 40px color-mix(in srgb, var(--blender-blue) 50%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 28%, transparent);
     }
     .btn-install-drag:active { cursor: grabbing; }
 
     .btn-icon {
       width: 1.45rem;
-      height: 1.45rem;
+      height: auto;
       flex-shrink: 0;
       display: block;
       filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
+    }
+
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+    .brand-lockup img {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.65rem;
+      display: block;
+      box-shadow: 0 0 0 1px color-mix(in srgb, white 10%, transparent);
+    }
+    .brand-lockup .name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .brand-lockup .sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .flow-step h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .flow-step h3 img {
+      width: 1.15rem;
+      height: 1.15rem;
+      display: block;
     }
 
     .btn-ghost {
@@ -381,7 +415,7 @@
       border: 1px solid color-mix(in srgb, var(--orange) 32%, transparent);
       box-shadow: 0 0 12px color-mix(in srgb, var(--orange) 18%, transparent);
     }
-    .flow-step h3 { margin: 0 0 0.15rem; font-size: 0.95rem; font-weight: 600; }
+    .flow-step h3 { margin: 0 0 0.15rem; font-size: 0.95rem; font-weight: 600; } /* icon flex rules above */
     .flow-step p { margin: 0; color: var(--muted); font-size: 0.88rem; }
     .arrow {
       text-align: center;
@@ -517,6 +551,13 @@
 
     <header class="hero">
       <div>
+        <div class="brand-lockup">
+          <img src="./brand-mark.svg" width="40" height="40" alt="Chrome Reference Drop" />
+          <div>
+            <div class="name">Chrome Reference Drop</div>
+            <div class="sub">Browser → Blender</div>
+          </div>
+        </div>
         <span class="badge glass">
           <span class="badge-dot" aria-hidden="true"></span>
           Blender 4.2+ · 5.x
@@ -583,7 +624,10 @@
           <div class="flow-step glass">
             <div class="flow-num">1</div>
             <div>
-              <h3>Chrome</h3>
+              <h3>
+                <img src="./chrome-logo.svg" width="18" height="18" alt="" />
+                Chrome
+              </h3>
               <p>Right-click any image → <strong style="color:var(--fg)">Copy image</strong></p>
             </div>
           </div>
@@ -591,7 +635,10 @@
           <div class="flow-step glass">
             <div class="flow-num">2</div>
             <div>
-              <h3>Blender 3D View</h3>
+              <h3>
+                <img src="./blender-logo.svg" width="20" height="16" alt="" />
+                Blender 3D View
+              </h3>
               <p>Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd></p>
             </div>
           </div>
