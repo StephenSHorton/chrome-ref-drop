@@ -31,13 +31,15 @@ Open the landing page, then **drag the orange button into Blender**:
 
 ### Drag this link (from GitHub too)
 
-> **[⧉ Drag and Drop into Blender](https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0)**
+> **[⧉ Drag and Drop into Blender](https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0)**
 
-Click-hold the link above and drop it onto a Blender window (or Preferences → Get Extensions).
+Click-hold the link above and drop it onto a Blender window (or Preferences → Get Extensions). You should get Blender’s install confirmation dialog.
+
+**Why Pages, not GitHub Releases?** Release download URLs redirect through a CDN; the final URL no longer ends in `.zip` and drops `?repository=` query params, so Blender ignores the drop. The zip on GitHub Pages is a direct file.
 
 **Tip:** like the official MCP add-on, you may need to **drop twice** — first to add the update repository, second to install the extension.
 
-…or [download the zip](https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip) and use **Install from Disk**.
+…or [download the zip](https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip) and use **Install from Disk**.
 
 **Requires** Blender **4.2+** (tested on **5.2 LTS**).  
 For URL downloads: **Preferences → System → Network → Allow Online Access**.

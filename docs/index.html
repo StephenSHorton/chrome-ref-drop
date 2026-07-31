@@ -593,7 +593,7 @@
             id="drag-install"
             class="btn btn-install-drag"
             draggable="true"
-            href="https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0"
+            href="https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0"
             title="Drag this button onto a Blender window"
           >
             <img
@@ -609,7 +609,7 @@
           <a
             id="download-link"
             class="btn btn-ghost"
-            href="https://github.com/StephenSHorton/chrome-ref-drop/releases/latest/download/chrome_ref_drop-latest.zip"
+            href="https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip"
           >
             Download zip
           </a>
@@ -619,15 +619,17 @@
         </div>
 
         <p class="hint">
-          Grab the orange button and drop it on a running Blender window
-          (or onto Preferences → Get Extensions).
-          <strong>First drop may add the update repository; drop a second time to install</strong>
-          — same flow as Blender Lab’s MCP add-on.
+          Grab the blue button and drop it on a running Blender window
+          (or onto <strong>Edit → Preferences → Get Extensions</strong>).
+          You should get an install confirmation dialog — enable the add-on when prompted.
+          <strong>If a repository is added first, drop a second time to install the add-on</strong>
+          (same pattern as Blender Lab’s MCP page).
         </p>
         <p class="note glass">
           Prefer menus? Download the zip → Blender →
           <strong>Edit → Preferences → Extensions → Install from Disk</strong>.
-          Enable <strong>Allow Online Access</strong> if you want URL downloads.
+          <strong>Allow Online Access</strong> must be on for URL / drag-install downloads
+          (Preferences → System → Network).
         </p>
       </div>
 
@@ -749,14 +751,16 @@
   </div>
 
   <script>
+    // Keep the full install URL (including ?repository=…).
+    // Do not set DownloadURL to a stripped path — that drops Blender metadata.
     (function () {
       const link = document.getElementById("drag-install");
       if (!link) return;
       link.addEventListener("dragstart", (e) => {
         const url = link.href;
+        e.dataTransfer.clearData();
         e.dataTransfer.setData("text/uri-list", url);
         e.dataTransfer.setData("text/plain", url);
-        e.dataTransfer.setData("DownloadURL", "application/zip:chrome_ref_drop.zip:" + url.split("?")[0]);
         e.dataTransfer.effectAllowed = "copyLink";
       });
     })();

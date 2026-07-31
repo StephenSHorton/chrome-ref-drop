@@ -126,8 +126,19 @@ def release_asset_url(version: str, filename: str) -> str:
     return f"https://github.com/{REPO}/releases/download/v{version}/{filename}"
 
 
+def pages_zip_url(filename: str = "chrome_ref_drop-latest.zip") -> str:
+    """Direct zip on GitHub Pages — no redirects (required for Blender drag-install).
+
+    GitHub *Releases* download URLs 302 through a CDN whose final path does not
+    end in ``.zip`` and drops query params, so Blender silently ignores the drop.
+    Hosting the same zip on Pages keeps ``….zip?repository=…&blender_version_min=…``.
+    """
+    return f"{PAGES_BASE}/{filename}"
+
+
 def latest_download_url(filename: str = "chrome_ref_drop-latest.zip") -> str:
-    return f"https://github.com/{REPO}/releases/latest/download/{filename}"
+    # Prefer Pages for installs; GitHub Releases remain a backup download source.
+    return pages_zip_url(filename)
 
 
 def drag_install_url(
@@ -138,6 +149,7 @@ def drag_install_url(
 ) -> str:
     """Blender drag-and-drop install URL (see extensions static repository docs)."""
     # URL must present as …something.zip?params — Blender strips/reads query args.
+    # Do NOT use github.com/releases/... URLs here (redirects break .zip + query).
     return (
         f"{zip_url}"
         f"?repository={quote(repository, safe='')}"
@@ -178,18 +190,25 @@ def write_install_urls(path: Path, version: str, blender_version_min: str) -> No
         "version": version,
         "blender_version_min": blender_version_min,
         "repository": DEFAULT_REPO_JSON,
-        "download_versioned": release_asset_url(version, versioned),
-        "download_latest": latest_download_url(latest_name),
+        # Direct Pages URLs (drag-install safe)
+        "download_versioned": pages_zip_url(versioned),
+        "download_latest": pages_zip_url(latest_name),
+        # GitHub Releases (may redirect; fine for manual browser download)
+        "download_github_versioned": release_asset_url(version, versioned),
+        "download_github_latest": (
+            f"https://github.com/{REPO}/releases/latest/download/{latest_name}"
+        ),
         "drag_versioned": drag_install_url(
-            release_asset_url(version, versioned),
+            pages_zip_url(versioned),
             blender_version_min=blender_version_min,
         ),
         "drag_latest": drag_install_url(
-            latest_download_url(latest_name),
+            pages_zip_url(latest_name),
             blender_version_min=blender_version_min,
         ),
         "pages": PAGES_BASE,
     }
+
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
@@ -250,7 +269,7 @@ def main(argv: list[str] | None = None) -> int:
     for f in files:
         print(f"  {f}")
 
-    archive_url = args.archive_url or release_asset_url(version, default_name)
+    archive_url = args.archive_url or pages_zip_url(default_name)
     if args.repo_index:
         index = build_repo_index(out.resolve(), archive_url)
         args.repo_index.parent.mkdir(parents=True, exist_ok=True)
@@ -260,8 +279,8 @@ def main(argv: list[str] | None = None) -> int:
     urls_path = args.install_urls or (ROOT / "dist" / "install-urls.json")
     write_install_urls(urls_path, version, vmin)
     print(f"Wrote {urls_path}")
-    print("Drag URL (latest):")
-    print(drag_install_url(latest_download_url(), blender_version_min=vmin))
+    print("Drag URL (latest, Pages-hosted):")
+    print(drag_install_url(pages_zip_url(), blender_version_min=vmin))
     return 0
 
 

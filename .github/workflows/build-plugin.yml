@@ -44,10 +44,11 @@ jobs:
           echo "artifact=${ARTIFACT}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           cp "dist/${ARTIFACT}" dist/chrome_ref_drop-latest.zip
-          # Static repo index pointing at the GitHub Release asset
+          # Host zips on Pages (direct .zip, no GitHub CDN redirects) so Blender
+          # drag-and-drop install works with ?repository=&blender_version_min=
           python scripts/package.py \
             --repo-index dist/index.json \
-            --archive-url "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${ARTIFACT}"
+            --archive-url "https://stephenshorton.github.io/chrome-ref-drop/${ARTIFACT}"
           # Staging tree for GitHub Pages
           mkdir -p _site
           cp docs/index.html _site/index.html
@@ -56,6 +57,9 @@ jobs:
           cp docs/chrome-logo.svg _site/chrome-logo.svg
           cp dist/index.json _site/index.json
           cp dist/install-urls.json _site/install-urls.json
+          # Direct installable zips (critical for drag-drop)
+          cp "dist/${ARTIFACT}" "_site/${ARTIFACT}"
+          cp dist/chrome_ref_drop-latest.zip _site/chrome_ref_drop-latest.zip
           ls -la dist/ _site/
           echo "Drag URL:"
           python scripts/package.py --drag-url-only
@@ -97,9 +101,9 @@ jobs:
 
             👉 Landing page: https://stephenshorton.github.io/chrome-ref-drop/
 
-            Or drag this URL onto Blender:
+            Or drag this URL onto Blender (Pages-hosted — no GitHub redirect):
 
-            `https://github.com/${{ github.repository }}/releases/latest/download/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0`
+            `https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0`
 
             …or download the zip and **Install from Disk**.
         env:
