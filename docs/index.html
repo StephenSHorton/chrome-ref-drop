@@ -593,8 +593,8 @@
             id="drag-install"
             class="btn btn-install-drag"
             draggable="true"
-            href="https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0"
-            title="Drag this button onto a Blender window"
+            href="https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-0.1.0.zip?repository=.%2Findex.json&blender_version_min=4.2.0"
+            title="Drag this button onto a Blender window — drop twice"
           >
             <img
               class="btn-icon"
@@ -609,7 +609,7 @@
           <a
             id="download-link"
             class="btn btn-ghost"
-            href="https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip"
+            href="https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-0.1.0.zip"
           >
             Download zip
           </a>
@@ -621,9 +621,13 @@
         <p class="hint">
           Grab the blue button and drop it on a running Blender window
           (or onto <strong>Edit → Preferences → Get Extensions</strong>).
-          You should get an install confirmation dialog — enable the add-on when prompted.
-          <strong>If a repository is added first, drop a second time to install the add-on</strong>
-          (same pattern as Blender Lab’s MCP page).
+        </p>
+        <p class="note glass">
+          <!-- Same instruction as blender.org/lab/mcp-server/ -->
+          If you drag &amp; drop into Blender <strong>you will need to do it twice</strong>.
+          First to add the extension repository, secondly to install the add-on itself.
+          This method allows you to receive update notifications whenever a new version
+          is available.
         </p>
         <p class="note glass">
           Prefer menus? Download the zip → Blender →

@@ -31,15 +31,15 @@ Open the landing page, then **drag the orange button into Blender**:
 
 ### Drag this link (from GitHub too)
 
-> **[⧉ Drag and Drop into Blender](https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0)**
+> **[⧉ Drag and Drop into Blender](https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-0.1.0.zip?repository=.%2Findex.json&blender_version_min=4.2.0)**
 
-Click-hold the link above and drop it onto a Blender window (or Preferences → Get Extensions). You should get Blender’s install confirmation dialog.
+Click-hold the link above and drop it onto a Blender window (or Preferences → Get Extensions).
 
-**Why Pages, not GitHub Releases?** Release download URLs redirect through a CDN; the final URL no longer ends in `.zip` and drops `?repository=` query params, so Blender ignores the drop. The zip on GitHub Pages is a direct file.
+**You will need to do it twice** (same wording as [Blender Lab MCP](https://www.blender.org/lab/mcp-server/)): first to add the repository, secondly to install the add-on itself. That enables update notifications.
 
-**Tip:** like the official MCP add-on, you may need to **drop twice** — first to add the update repository, second to install the extension.
+**Why Pages, not GitHub Releases?** Release download URLs redirect through a CDN; the final URL no longer ends in `.zip` and drops `?repository=` query params, so Blender ignores the drop. The zip on GitHub Pages is a direct file. The drag URL must also match the package filename listed in `index.json` (versioned zip, not `-latest`).
 
-…or [download the zip](https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip) and use **Install from Disk**.
+…or [download the zip](https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-0.1.0.zip) and use **Install from Disk**.
 
 **Requires** Blender **4.2+** (tested on **5.2 LTS**).  
 For URL downloads: **Preferences → System → Network → Allow Online Access**.

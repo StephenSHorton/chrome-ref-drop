@@ -14,18 +14,15 @@
         "SPDX:GPL-3.0-or-later"
       ],
       "blender_version_min": "4.2.0",
+      "blender_version_max": "6.0.0",
       "website": "https://github.com/StephenSHorton/chrome-ref-drop",
       "tags": [
         "Import-Export",
         "3D View"
       ],
-      "archive_url": "https://github.com/StephenSHorton/chrome-ref-drop/releases/download/v0.1.0/chrome_ref_drop-0.1.0.zip",
+      "archive_url": "./chrome_ref_drop-0.1.0.zip",
       "archive_size": 11958,
-      "archive_hash": "sha256:1f4336a36a1e42f01740594331dfc9346c26159c14d181d0af214b9b7de14d7b",
-      "permissions": {
-        "network": "Download images from http(s) URLs dragged or pasted from a browser",
-        "files": "Read dropped image files and cache downloaded browser images"
-      }
+      "archive_hash": "sha256:1f4336a36a1e42f01740594331dfc9346c26159c14d181d0af214b9b7de14d7b"
     }
   ]
 }

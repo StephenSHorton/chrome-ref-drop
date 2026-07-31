@@ -144,12 +144,23 @@ def latest_download_url(filename: str = "chrome_ref_drop-latest.zip") -> str:
 def drag_install_url(
     zip_url: str,
     *,
-    repository: str = DEFAULT_REPO_JSON,
+    repository: str | None = None,
     blender_version_min: str = "4.2.0",
 ) -> str:
-    """Blender drag-and-drop install URL (see extensions static repository docs)."""
-    # URL must present as …something.zip?params — Blender strips/reads query args.
-    # Do NOT use github.com/releases/... URLs here (redirects break .zip + query).
+    """Blender drag-and-drop install URL (see extensions static repository docs).
+
+    Use a zip URL that **exactly** matches the index entry's archive file name
+    (e.g. ``chrome_ref_drop-0.1.0.zip``, not ``-latest.zip``). Blender looks the
+    dropped package up in the remote index; a filename mismatch yields
+    “extension dropped was not found in remote repository”.
+
+    ``repository`` defaults to a same-folder relative ``./index.json`` (encoded),
+    matching Blender's documented self-hosted example.
+    """
+    # Relative index next to the zip — same pattern as the manual example:
+    #   my-addon.zip?repository=.%2Findex.json&blender_version_min=4.2.0
+    if repository is None:
+        repository = "./index.json"
     return (
         f"{zip_url}"
         f"?repository={quote(repository, safe='')}"
@@ -158,8 +169,20 @@ def drag_install_url(
 
 
 def build_repo_index(zip_path: Path, archive_url: str) -> dict[str, Any]:
+    """Build a static-repo index entry.
+
+    Prefer a *relative* ``archive_url`` (``./chrome_ref_drop-X.Y.Z.zip``) so it
+    resolves next to ``index.json`` on Pages — same pattern as community repos
+    and Blender's own ``server-generate`` output.
+
+    Note: do **not** put permissions here; they live in the zip manifest.
+    Official platform listings also omit them from index entries.
+    """
     m = read_manifest()
     version = str(m["version"])
+    # Relative path matches the file we publish beside index.json
+    if not archive_url or archive_url.startswith("https://"):
+        archive_url = f"./chrome_ref_drop-{version}.zip"
     entry = {
         "schema_version": str(m.get("schema_version", "1.0.0")),
         "id": str(m["id"]),
@@ -170,15 +193,14 @@ def build_repo_index(zip_path: Path, archive_url: str) -> dict[str, Any]:
         "maintainer": str(m.get("maintainer", "")),
         "license": list(m.get("license") or ["SPDX:GPL-3.0-or-later"]),
         "blender_version_min": str(m.get("blender_version_min", "4.2.0")),
+        # Exclusive upper bound (same idea as Launch kits: support through 5.x)
+        "blender_version_max": "6.0.0",
         "website": str(m.get("website", f"https://github.com/{REPO}")),
         "tags": list(m.get("tags") or []),
         "archive_url": archive_url,
         "archive_size": zip_path.stat().st_size,
         "archive_hash": f"sha256:{sha256_file(zip_path)}",
     }
-    perms = m.get("permissions")
-    if isinstance(perms, dict) and perms:
-        entry["permissions"] = perms
     return {"version": "v1", "blocklist": [], "data": [entry]}
 
 
@@ -186,10 +208,16 @@ def write_install_urls(path: Path, version: str, blender_version_min: str) -> No
     """Machine-readable install URLs for the landing page / README."""
     versioned = f"chrome_ref_drop-{version}.zip"
     latest_name = "chrome_ref_drop-latest.zip"
+    # Drag must use the versioned filename that appears in index.json archive_url.
+    drag = drag_install_url(
+        pages_zip_url(versioned),
+        blender_version_min=blender_version_min,
+    )
     payload = {
         "version": version,
         "blender_version_min": blender_version_min,
-        "repository": DEFAULT_REPO_JSON,
+        "repository": f"{PAGES_BASE}/index.json",
+        "repository_relative": "./index.json",
         # Direct Pages URLs (drag-install safe)
         "download_versioned": pages_zip_url(versioned),
         "download_latest": pages_zip_url(latest_name),
@@ -198,14 +226,9 @@ def write_install_urls(path: Path, version: str, blender_version_min: str) -> No
         "download_github_latest": (
             f"https://github.com/{REPO}/releases/latest/download/{latest_name}"
         ),
-        "drag_versioned": drag_install_url(
-            pages_zip_url(versioned),
-            blender_version_min=blender_version_min,
-        ),
-        "drag_latest": drag_install_url(
-            pages_zip_url(latest_name),
-            blender_version_min=blender_version_min,
-        ),
+        "drag_versioned": drag,
+        # Alias kept for callers; points at versioned zip (not -latest) on purpose
+        "drag_latest": drag,
         "pages": PAGES_BASE,
     }
 
@@ -259,7 +282,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.drag_url_only:
-        print(drag_install_url(latest_download_url(), blender_version_min=vmin))
+        # Must match index.json archive filename (versioned, not -latest)
+        print(
+            drag_install_url(
+                pages_zip_url(default_name),
+                blender_version_min=vmin,
+            )
+        )
         return 0
 
     out = args.output or (ROOT / "dist" / default_name)
@@ -269,7 +298,8 @@ def main(argv: list[str] | None = None) -> int:
     for f in files:
         print(f"  {f}")
 
-    archive_url = args.archive_url or pages_zip_url(default_name)
+    # Relative path by default — resolves next to index.json on Pages
+    archive_url = args.archive_url or f"./chrome_ref_drop-{version}.zip"
     if args.repo_index:
         index = build_repo_index(out.resolve(), archive_url)
         args.repo_index.parent.mkdir(parents=True, exist_ok=True)
@@ -279,8 +309,13 @@ def main(argv: list[str] | None = None) -> int:
     urls_path = args.install_urls or (ROOT / "dist" / "install-urls.json")
     write_install_urls(urls_path, version, vmin)
     print(f"Wrote {urls_path}")
-    print("Drag URL (latest, Pages-hosted):")
-    print(drag_install_url(pages_zip_url(), blender_version_min=vmin))
+    print("Drag URL (versioned zip + relative index, Pages-hosted):")
+    print(
+        drag_install_url(
+            pages_zip_url(default_name),
+            blender_version_min=vmin,
+        )
+    )
     return 0
 
 

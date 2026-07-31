@@ -44,11 +44,10 @@ jobs:
           echo "artifact=${ARTIFACT}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           cp "dist/${ARTIFACT}" dist/chrome_ref_drop-latest.zip
-          # Host zips on Pages (direct .zip, no GitHub CDN redirects) so Blender
-          # drag-and-drop install works with ?repository=&blender_version_min=
+          # Relative archive_url so Blender resolves the package next to index.json
           python scripts/package.py \
             --repo-index dist/index.json \
-            --archive-url "https://stephenshorton.github.io/chrome-ref-drop/${ARTIFACT}"
+            --archive-url "./${ARTIFACT}"
           # Staging tree for GitHub Pages
           mkdir -p _site
           cp docs/index.html _site/index.html
@@ -101,9 +100,10 @@ jobs:
 
             👉 Landing page: https://stephenshorton.github.io/chrome-ref-drop/
 
-            Or drag this URL onto Blender (Pages-hosted — no GitHub redirect):
+            Or drag this URL onto Blender (Pages-hosted — no GitHub redirect).
+            **You will need to drop it twice** (repo first, then the add-on):
 
-            `https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-latest.zip?repository=https%3A%2F%2Fstephenshorton.github.io%2Fchrome-ref-drop%2Findex.json&blender_version_min=4.2.0`
+            `https://stephenshorton.github.io/chrome-ref-drop/chrome_ref_drop-0.1.0.zip?repository=.%2Findex.json&blender_version_min=4.2.0`
 
             …or download the zip and **Install from Disk**.
         env:
